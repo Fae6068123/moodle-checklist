@@ -46,7 +46,19 @@ $csv->add_data($fields);
 foreach ($items as $item) {
     $output = array();
     foreach ($fields as $field => $unused) {
-        $output[] = $item->$field;
+        
+        if ($field == 'duetime') //if ($field->field->type == 'date')
+        {
+            if (!$item->$field == 0){
+                $output[] = userdate($item->$field);
+            }
+            else
+                $output[] = $item->$field;
+        }
+        else
+        {
+            $output[] = $item->$field;
+        }
     }
     $csv->add_data($output);
 }
