@@ -1228,7 +1228,9 @@ class checklist_class {
         foreach ($passedrow[0] as $key => $item) {
             if ($key == 0) {
                 // Left align + colspan of 2 (overlapping the button column).
-                $output .= '<td colspan="2" style=" text-align: left; width: '.$table->size[0].';" class="cell c0"></td>';
+                $output .= '<td style=" text-align: left; width: '.$table->size[0].';" class="cell c0"></td>';
+                $output .= '<td style=" width: '.$size.'"></td>';
+                $output .= '<td>&nbsp;</td>';
             } else {
                 $size = $table->size[$key];
                 $cellclass = 'cell c'.$key.' level'.$table->level[$key];
@@ -1236,6 +1238,7 @@ class checklist_class {
                 if ($heading) {
                     // Heading items have no buttons.
                     $output .= '<td style=" text-align: center; width: '.$size.';" class="cell c0">&nbsp;</td>';
+                    
                 } else {
                     // Not a heading item => add a button.
                     $output .= '<td style=" text-align: center; width: '.$size.';" class="'.$cellclass.'">';
@@ -1280,19 +1283,48 @@ class checklist_class {
             }
             // If statement to judge if the header is the first cell in the row, if so the <th> needs colspan=2 added
             // to cover the extra column added (containing the toggle button) to retain the correct table structure.
-            $colspan = '';
-            if ($key == 0 && $editchecks) {
-                $colspan = 'colspan="2"';
+            
+            if ($key == 0){
+                $levelclass .= ' headcol';
+            }  
+           
+           
+            if ($key == 0){
+                if (!$editchecks){
+                    $output .= '<th style="vertical-align:top; text-align: center; height: 120px;";
+                        class="header c'.$key.$levelclass.' " scope="col">';
+                    $output .= $heading.'</th>';
+                    
+                } else{
+                    $output .= '<th style="vertical-align:top; text-align: center; height: 130px;";
+                        class="header c'.$key.$levelclass.'" scope="col">';
+                    $output .= $heading.'</th>';
+                    $output .= '<th></th>';
+                }
+ 
             }
-            $output .= '<th '.$colspan.' style="vertical-align:top; text-align: center; width:'.$size.
+            else{
+                $output .= '<th style="vertical-align:top; text-align: center; width:'.$size.
                 '" class="header c'.$key.$levelclass.'" scope="col">';
-            $output .= $heading.'</th>';
+                $output .= $heading.'</th>';
+            }
+            
+            if ($key == 0){
+                if ($editchecks){
+                    $output .= '<th class="header c' .$key.'" style="min-width:280px">&nbsp;</th>';
+                }
+                else{
+                    $output .= '<th class="header c' .$key.'" style="min-width:220px">&nbsp;</th>';
+                }
+                
+            }
         }
         $output .= '</tr>';
 
         // If we are in editing mode, run the add_row function that adds the button and necessary code to the document.
         if ($editchecks) {
             $output .= $this->report_add_toggle_button_row($table);
+
         }
         // Output the data.
         $tickimg = $OUTPUT->pix_icon('i/grade_correct', get_string('itemcomplete', 'checklist'));
@@ -1319,9 +1351,29 @@ class checklist_class {
                 if ($table->skip[$colkey]) {
                     continue;
                 }
+                
+                if ($editchecks){
+                    $VertSize = "60px";
+                }
+                else{
+                    $VertSize = "49px";
+                }
+                    
                 if ($colkey == 0) {
                     // First item is the name.
-                    $output .= '<td style=" text-align: left; width: '.$table->size[0].';" class="cell c0">'.$item.'</td>';
+                    if ($oddeven){
+                        $output .= '<td style=" text-align: left; width: 220px; height:' .$VertSize. '" class="cell c0 headcol evenrow">'.$item.'</td>';
+                    }
+                    else{
+                        $output .= '<td style=" text-align: left; width: 220px; height:' .$VertSize. ' " class="cell c0 headcol oddrow">'.$item.'</td>';
+                    }
+                    
+                   
+                    $output .= '<td></td>';
+               
+                
+                    
+             
                 } else {
                     $size = $table->size[$colkey];
                     $img = '&nbsp;';
@@ -1329,7 +1381,7 @@ class checklist_class {
                     list($teachermark, $studentmark, $heading, $userid, $checkid) = $item;
                     // If statement to add button at beginning of row in edting mode.
                     if ($colkey == 1 && $editchecks) {
-                        $output .= '<td style=" text-align: center; width: '.$size.';" class="'.$cellclass.'">';
+                        $output .= '<td style=" padding-left: 180px; text-align: center; width: '.$size.'; " class="'.$cellclass.' ">';
                         $output .= html_writer::tag('button', get_string('togglerow', 'checklist'),
                                                     array(
                                                         'class' => 'make_c btn btn-secondary',
@@ -1514,13 +1566,14 @@ class checklist_class {
                 $linkcourseid = optional_param('linkcourseid', null, PARAM_INT);
                 $linkurl = optional_param('linkurl', null, PARAM_URL);
                 $groupingid = optional_param('groupingid', 0, PARAM_INT);
+                $openlinkinnewwindow = optional_param('openlinkinnewwindow', false, PARAM_BOOL);
                 if (optional_param('duetimedisable', false, PARAM_BOOL)) {
                     $duetime = false;
                 } else {
                     $duetime = optional_param_array('duetime', false, PARAM_INT);
                 }
                 $this->additem($displaytext, 0, $indent, $position, $duetime, 0, CHECKLIST_OPTIONAL_NO, CHECKLIST_HIDDEN_NO,
-                               $linkcourseid, $linkurl, $groupingid);
+                               $linkcourseid, $linkurl, $groupingid, $openlinkinnewwindow);
                 if ($position) {
                     $additemafter = false;
                 }
@@ -1711,7 +1764,7 @@ class checklist_class {
 
     public function additem($displaytext, $userid = 0, $indent = 0, $position = false, $duetime = false, $moduleid = 0,
                             $optional = CHECKLIST_OPTIONAL_NO, $hidden = CHECKLIST_HIDDEN_NO, $linkcourseid = null,
-                            $linkurl = null, $groupingid = 0) {
+                            $linkurl = null, $groupingid = 0, $openlinkinnewwindow = false) {
         $displaytext = trim($displaytext);
         if ($displaytext == '') {
             return false;
@@ -1752,6 +1805,7 @@ class checklist_class {
         $item->linkcourseid = $linkcourseid;
         $item->linkurl = $linkurl;
         $item->groupingid = $groupingid;
+        $item->openlinkinnewwindow = $openlinkinnewwindow;
 
         $item->insert();
         if ($item->id) {
