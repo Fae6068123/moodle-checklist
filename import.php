@@ -104,13 +104,14 @@ if ($data = $form->get_data()) {
         $newitem->displaytext = isset($line->displaytext) ? trim($line->displaytext) : '';
         $newitem->indent = empty($line->indent) ? 0 : max(min((int)($line->indent), 10), 0);
         $newitem->itemoptional = empty($line->itemoptional) ? 0 : max(min((int)($line->itemoptional), 2), 0);
-        $newitem->duetime = empty($line->duetime) ? 0 : max((int)($line->duetime), 0);
-        $newitem->colour = empty($line->colour) ? '' : trim(strtolower($line->colour));
+        $newitem->duetime = empty($line->duetime) ? 0 : max((int)(strtotime($line->duetime)), 0);//import data
+        $newitem->colour = empty($line->colour) ? '' : trim(strtolower($line->colour)); 
         if (!in_array($newitem->colour, ['red', 'orange', 'green', 'purple', 'black'])) {
             $newitem->colour = 'black';
         }
         $newitem->linkcourseid = empty($line->linkcourseid) ? null : (int)$line->linkcourseid;
         $newitem->linkurl = empty($line->linkurl) ? null : clean_param($line->linkurl, PARAM_URL);
+        $newitem->openlinkinnewwindow = empty($line->openlinkinnewwindow) ? false : (bool) $line->openlinkinnewwindow;
 
         if ($newitem->displaytext) { // Don't insert items without any text in them.
             if (!$newitem->insert()) {
