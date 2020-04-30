@@ -282,3 +282,25 @@ ol.checklist label {
 .checklist-groupingname {
     color: #ccc;
 }
+
+.checklistreport .headcol { 
+	position: absolute; 
+}
+
+.checklistreport .oddrow { 
+	background-color: #f1f3f3; 
+	width: 220px;
+} 
+
+.checklistreport .evenrow { 
+	background-color: #ffffff; 
+	width: 220px;
+}
+
+.checklistreport .headernocheck{
+	height: 120px;
+}
+
+.checklistreport .headercheck{
+	height: 91px;
+}
