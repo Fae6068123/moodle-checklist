@@ -44,9 +44,23 @@ $csv->filename = clean_filename("{$course->shortname} $strchecklist {$checklist-
 $csv->add_data($fields);
 
 foreach ($items as $item) {
+    
     $output = array();
+    //changes to export date fields
     foreach ($fields as $field => $unused) {
-        $output[] = $item->$field;
+        
+        if ($field == 'duetime')
+        {
+            if(!$item->$field == 0){
+                $output[] = userdate($item->$field);
+            }
+            else{
+                $output[] = $item->$field;
+            }          
+        }
+        else{
+            $output[] = $item->$field;
+        }
     }
     $csv->add_data($output);
 }
